@@ -2,7 +2,4 @@ streamlit==1.30.0
 pandas==2.0.3
 numpy==1.24.3
 plotly==5.18.0
-spacy==3.5.4
-sentence-transformers==2.2.2
-huggingface-hub==0.19.4
-en-core-web-sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.5.0/en_core_web_sm-3.5.0-py3-none-any.whl
+matplotlib==3.7.2
