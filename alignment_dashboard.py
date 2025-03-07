@@ -1,4 +1,3 @@
-#alignment_dashboard.py
 import streamlit as st
 import os
 import pandas as pd
@@ -31,91 +30,83 @@ courses_df["Embeddings"] = courses_df["Outcome"].apply(lambda x: model.encode(x)
 jobs_df["Embeddings"] = jobs_df["Description"].apply(lambda x: model.encode(x))
 standards_df["Embeddings"] = standards_df["Competency"].apply(lambda x: model.encode(x))
 
-# Custom CSS for IAU theme with applied suggestions
+# Custom CSS for IAU theme
 st.markdown(
     """
     <style>
     .stApp {
-        background-color: #1A2A44; /* Dark blue from IAU header */
-        color: #F4E3B2; /* Goldish-white text */
-    }
-    .stHeader {
         background-color: #1A2A44;
-        padding: 10px;
-        text-align: center;
         color: #F4E3B2;
+        font-family: 'Arial', sans-serif;
     }
     .stSidebar {
-        background-color: #1A2A44;
+        background-color: #2E4066;
         color: #F4E3B2;
         width: 200px !important;
-    }
-    .stSidebar .stSelectbox, .stSidebar .stTextArea {
-        background-color: #2E4066; /* Darker background for sidebar inputs */
-        color: #F4E3B2;
-        border: 1px solid #F4E3B2;
-    }
-    .stSidebar .stSelectbox > div > div, .stSidebar .stTextArea > div > div {
-        color: #F4E3B2 !important;
+        padding: 10px;
     }
     .stButton>button {
         background-color: #F4E3B2;
         color: #1A2A44;
+        border-radius: 5px;
+        font-weight: bold;
     }
-    .stMetric>span {
-        color: #F4E3B2;
-        opacity: 1.0 !important;
-        text-shadow: 1px 1px 3px #000000, 0 0 5px #FFFFFF; /* Stronger shadow with white outline */
-        background-color: rgba(30, 50, 80, 0.9); /* Darker blue background */
-        padding: 8px 12px;
-        border: 2px solid #F4E3B2; /* Gold border */
-        border-radius: 8px;
-    }
+    /* KPI styles are now handled by custom HTML/CSS in the code */
     .stDataFrame {
         background-color: #2E4066;
         color: #F4E3B2;
         border: 2px solid #F4E3B2;
         border-radius: 5px;
-    }
-    .stDataFrame th, .stDataFrame td {
-        font-weight: bold;
-        padding: 8px;
+        font-size: 14px;
     }
     h1, h2, h3 {
         color: #F4E3B2 !important;
+        font-family: 'Arial', sans-serif;
     }
-    .css-1aumxhk { /* Target title element */
+    .css-1aumxhk {
         color: #F4E3B2 !important;
     }
-    /* Remove pink brain icon (replace with neutral/gold if desired) */
     .stApp [data-testid="stDecoration"] {
         display: none;
     }
-    /* Add subtle IAU branding to footer */
+    /* Updated tab styling - FIXED: improved visibility for both selected and non-selected tabs */
+    div[data-baseweb="tab-list"] {
+        display: flex;
+        flex-wrap: wrap;
+    }
+    button[role="tab"] {
+        color: #F4E3B2 !important;
+        background-color: #2E4066;
+        padding: 10px 20px;
+        border-radius: 5px;
+        margin: 5px;
+        font-size: 16px;
+        opacity: 1.0 !important;
+        border: 1px solid #F4E3B2;
+    }
+    button[role="tab"]:hover {
+        color: #FFFFFF !important;
+        background-color: #3A5488;
+    }
+    button[role="tab"][aria-selected="true"] {
+        color: #FFFFFF !important;
+        background-color: #1A2A44;
+        border-bottom: 3px solid #F4E3B2;
+    }
     .stFooter {
         color: #F4E3B2;
         text-align: center;
-        font-size: 12px;
-    }
-    .stFooter::after {
-        content: " | IAU - Jubail";
+        font-size: 14px;
+        padding: 10px;
     }
     </style>
     """,
     unsafe_allow_html=True
 )
+# Header image
+st.image("Header_img.png", use_column_width=True)
 
-# Add IAU header
-st.markdown(
-    f"""
-    <div class="stHeader">
-        <img src="Header_img.png" alt="IAU Header" style="width:100%; height:auto;">
-    </div>
-    """,
-    unsafe_allow_html=True
-)
-
-# Streamlit app
+# Title and subtitle
 st.title("🧠 Smart Computer Science Alignment Dashboard")
 st.markdown("Using AI to Align Courses with Market Needs and Standards")
 
@@ -143,20 +134,56 @@ standard_embeddings = standards_df["Embeddings"].tolist()
 job_similarities = util.cos_sim(course_avg_embedding, job_embeddings)[0].numpy()
 standard_similarities = util.cos_sim(course_avg_embedding, standard_embeddings)[0].numpy()
 
-# KPIs
+# KPIs - Using custom solution instead of st.metric for better visibility
 st.header("📊 Key Performance Indicators")
-col1, col2, col3 = st.columns(3)
 
+# Calculate metrics
 avg_job_similarity = np.mean(job_similarities) * 100
 avg_standard_similarity = np.mean(standard_similarities) * 100
 skill_gaps = len([s for s in skills if max([util.cos_sim(model.encode(s), e)[0][0] for e in course_embeddings]) < 0.7])
 
+# Create a custom layout for metrics to ensure visibility
+col1, col2, col3 = st.columns(3)
+
+# Custom HTML/CSS for KPI display instead of using st.metric
 with col1:
-    st.metric("Market Needs Alignment", f"{avg_job_similarity:.2f}%")
+    st.markdown(f"""
+        <div style="background-color: rgba(30, 50, 80, 1.0); padding: 15px; border-radius: 10px; 
+                    border: 2px solid #F4E3B2; text-align: center;">
+            <div style="color: #FFFF00; font-size: 16px; font-weight: bold; margin-bottom: 5px;">
+                Market Alignment
+            </div>
+            <div style="color: #FFFFFF; font-size: 24px; font-weight: bold;">
+                {avg_job_similarity:.2f}%
+            </div>
+        </div>
+    """, unsafe_allow_html=True)
+
 with col2:
-    st.metric("Standards Alignment", f"{avg_standard_similarity:.2f}%")
+    st.markdown(f"""
+        <div style="background-color: rgba(30, 50, 80, 1.0); padding: 15px; border-radius: 10px; 
+                    border: 2px solid #F4E3B2; text-align: center;">
+            <div style="color: #FFFF00; font-size: 16px; font-weight: bold; margin-bottom: 5px;">
+                Standards Match
+            </div>
+            <div style="color: #FFFFFF; font-size: 24px; font-weight: bold;">
+                {avg_standard_similarity:.2f}%
+            </div>
+        </div>
+    """, unsafe_allow_html=True)
+
 with col3:
-    st.metric("Semantic Skill Gaps", skill_gaps)
+    st.markdown(f"""
+        <div style="background-color: rgba(30, 50, 80, 1.0); padding: 15px; border-radius: 10px; 
+                    border: 2px solid #F4E3B2; text-align: center;">
+            <div style="color: #FFFF00; font-size: 16px; font-weight: bold; margin-bottom: 5px;">
+                Skill Gaps
+            </div>
+            <div style="color: #FFFFFF; font-size: 24px; font-weight: bold;">
+                {skill_gaps}
+            </div>
+        </div>
+    """, unsafe_allow_html=True)
 
 # Skill similarity table
 st.header("🔍 Skill Similarity Details")
@@ -175,11 +202,12 @@ for skill in skills:
 similarity_df = pd.DataFrame(skill_similarities)
 st.dataframe(similarity_df, use_container_width=True)
 
-# Visualizations
+# Visualizations - FIXED: More visible tab titles
 st.header("📈 Visual Insights")
-tab1, tab2 = st.tabs(["Similarity Distribution", "Top Skills"])
+# Better approach for tabs with clearer names
+tabs = st.tabs(["📊 Similarity Distribution", "🔝 Top Skills"])
 
-with tab1:
+with tabs[0]:  # First tab - Similarity Distribution
     sim_df = pd.DataFrame({
         "Similarity": np.concatenate([job_similarities, standard_similarities]),
         "Source": ["Jobs"] * len(job_similarities) + ["Standards"] * len(standard_similarities)
@@ -187,7 +215,7 @@ with tab1:
     fig = px.histogram(sim_df, x="Similarity", color="Source", nbins=20, title="Similarity Distribution")
     st.plotly_chart(fig, use_container_width=True)
 
-with tab2:
+with tabs[1]:  # Second tab - Top Skills
     course_skills = sum(courses_df[courses_df["Course_Name"] == course_name]["Outcome"].apply(
         lambda x: [t.text for t in nlp(x) if t.text in skills]).tolist(), [])
     job_skills = sum(jobs_df["Description"].apply(lambda x: [t.text for t in nlp(x) if t.text in skills]).tolist(), [])
