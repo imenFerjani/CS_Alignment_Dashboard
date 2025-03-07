@@ -2,19 +2,28 @@ import streamlit as st
 import os
 import pandas as pd
 import spacy
+import subprocess
+import sys
 from sentence_transformers import SentenceTransformer, util
 import numpy as np
 import plotly.express as px
 from collections import Counter
-from huggingface_hub.inference_api import InferenceApi
 import random
 
-# Load SpaCy model - proper error handling for cloud deployment
-try:
-    nlp = spacy.load("en_core_web_sm")
-except OSError:
-    st.error("SpaCy model not found. Please make sure 'en_core_web_sm' is included in your requirements.txt file.")
-    st.stop()
+
+# Download SpaCy model if not available
+@st.cache_resource
+def load_spacy_model():
+    try:
+        return spacy.load("en_core_web_sm")
+    except OSError:
+        st.info("Downloading SpaCy model. This may take a moment...")
+        subprocess.check_call([sys.executable, "-m", "spacy", "download", "en_core_web_sm"])
+        return spacy.load("en_core_web_sm")
+
+
+# Load SpaCy model with caching
+nlp = load_spacy_model()
 
 
 # Function to check and create mock data if needed
@@ -93,18 +102,30 @@ skills = ["Python", "Java", "C++", "SQL", "AWS", "Kubernetes", "Docker", "Tensor
           "Git", "Linux", "Spark", "Tableau", "Wireshark", "Solidity", "ROS", "OpenCV", "JavaScript", "HTML",
           "CSS", "MongoDB", "PostgreSQL", "Agile", "Scrum", "encryption", "machine learning", "NLP", "cloud"]
 
-# Load SentenceTransformer model
-with st.spinner("Loading models... This may take a moment."):
-    model = SentenceTransformer('all-MiniLM-L6-v2')
 
-# Extract embeddings - with progress indicator
+# Load SentenceTransformer model with caching
+@st.cache_resource
+def load_sentence_transformer():
+    return SentenceTransformer('all-MiniLM-L6-v2')
+
+
+model = load_sentence_transformer()
+
+
+# Extract embeddings - with caching to improve performance
+@st.cache_data
+def get_embedding(_text):
+    return model.encode(_text)
+
+
+# Apply embeddings with progress
 with st.spinner("Computing embeddings..."):
     if "Embeddings" not in courses_df.columns:
-        courses_df["Embeddings"] = courses_df["Outcome"].apply(lambda x: model.encode(x))
+        courses_df["Embeddings"] = courses_df["Outcome"].apply(get_embedding)
     if "Embeddings" not in jobs_df.columns:
-        jobs_df["Embeddings"] = jobs_df["Description"].apply(lambda x: model.encode(x))
+        jobs_df["Embeddings"] = jobs_df["Description"].apply(get_embedding)
     if "Embeddings" not in standards_df.columns:
-        standards_df["Embeddings"] = standards_df["Competency"].apply(lambda x: model.encode(x))
+        standards_df["Embeddings"] = standards_df["Competency"].apply(get_embedding)
 
 # Custom CSS for IAU theme
 st.markdown(
@@ -198,7 +219,7 @@ custom_outcome = st.sidebar.text_area("Or Enter Custom Outcome", "")
 
 # Filter data based on selection
 if custom_outcome:
-    course_embeddings = [model.encode(custom_outcome)]
+    course_embeddings = [get_embedding(custom_outcome)]
     course_name = "Custom Course"
 else:
     course_data = courses_df[courses_df["Course_Name"] == selected_course]
@@ -220,7 +241,7 @@ st.header("📊 Key Performance Indicators")
 # Calculate metrics
 avg_job_similarity = np.mean(job_similarities) * 100
 avg_standard_similarity = np.mean(standard_similarities) * 100
-skill_gaps = len([s for s in skills if max([util.cos_sim(model.encode(s), e)[0][0] for e in course_embeddings]) < 0.7])
+skill_gaps = len([s for s in skills if max([util.cos_sim(get_embedding(s), e)[0][0] for e in course_embeddings]) < 0.7])
 
 # Create a custom layout for metrics to ensure visibility
 col1, col2, col3 = st.columns(3)
@@ -269,7 +290,7 @@ with col3:
 st.header("🔍 Skill Similarity Details")
 skill_similarities = []
 for skill in skills:
-    skill_embedding = model.encode(skill)
+    skill_embedding = get_embedding(skill)
     max_course_similarity = max([util.cos_sim(skill_embedding, e)[0][0] for e in course_embeddings])
     max_job_similarity = max([util.cos_sim(skill_embedding, e)[0][0] for e in job_embeddings])
     max_standard_similarity = max([util.cos_sim(skill_embedding, e)[0][0] for e in standard_embeddings])
@@ -321,12 +342,12 @@ with tabs[1]:  # Second tab - Top Skills
     else:
         st.info("No skill frequency data available for this course.")
 
-# Smart Recommender with Hugging Face Inference API
+# Smart Recommender with mock recommendations
 st.header("🤖 Smart Skill Recommender")
-st.write("AI-powered suggestions using Hugging Face Inference API.")
+st.write("AI-powered skill recommendations for course improvement.")
 
 
-# Create a mock recommendation function since we might not have API access in deployment
+# Create a mock recommendation function
 def get_mock_recommendation(low_sim_skills):
     if not low_sim_skills:
         return ["Course is well-aligned—no major gaps!"]
