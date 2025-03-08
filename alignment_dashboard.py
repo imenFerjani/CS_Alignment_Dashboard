@@ -422,15 +422,10 @@ st.markdown(
 
 # Add header image or logo
 st.markdown("""
-
-<div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; background-color: #2E4066; border-radius: 10px; margin-bottom: 20px;">
+<div style="display: flex; justify-content: center; align-items: center; padding: 10px; background-color: #2E4066; border-radius: 10px; margin-bottom: 20px; text-align: center;">
     <div>
         <h1 style="margin: 0; padding: 0;">🧠 Smart CS Alignment Dashboard</h1>
         <p style="margin: 5px 0 0 0;">Using AI to align curriculum with industry needs and standards</p>
-    </div>
-    <div>
-        <h3 style="margin: 0;">IAU University</h3>
-        <p style="margin: 0;">Computer Science Department</p>
     </div>
 </div>
 """, unsafe_allow_html=True)
@@ -534,7 +529,7 @@ col1, col2, col3 = st.columns(3)
 with col1:
     st.markdown(f"""
     <div class="metrics-card">
-        <div class="metrics-label">Market Alignment</div>
+        <div class="metrics-label">📈 Market Alignment</div>
         <div class="metrics-value">{market_coverage:.1f}%</div>
     </div>
     """, unsafe_allow_html=True)
@@ -542,7 +537,7 @@ with col1:
 with col2:
     st.markdown(f"""
     <div class="metrics-card">
-        <div class="metrics-label">Standards Alignment</div>
+        <div class="metrics-label">🎯 Standards Alignment</div>
         <div class="metrics-value">{standards_coverage:.1f}%</div>
     </div>
     """, unsafe_allow_html=True)
@@ -550,7 +545,7 @@ with col2:
 with col3:
     st.markdown(f"""
     <div class="metrics-card">
-        <div class="metrics-label">Skill Gaps</div>
+        <div class="metrics-label">🧩 Skill Gaps</div>
         <div class="metrics-value">{len(skill_gaps)}</div>
     </div>
     """, unsafe_allow_html=True)
@@ -587,7 +582,7 @@ if skill_gaps:
     st.header("📊 Gap Visualization")
 
     # Create tabs for different visualizations
-    tab1, tab2, tab3 = st.tabs(["Skills Gap Analysis", "Category Coverage", "Comparison"])
+    tab1, tab2, tab3 = st.tabs(["📊 Skills Gap Analysis", "📁 Category Coverage", "🔍 Comparison"])
 
     with tab1:
         # Get top N gaps for visualization
@@ -750,7 +745,7 @@ else:
 st.header("🤖 AI-Powered Course Enhancement Recommendations")
 st.markdown("Use our LLM-based AI to generate tailored recommendations for addressing identified skill gaps")
 
-if st.button("Generate AI Recommendations"):
+if st.button("💡 Generate AI Recommendations"):
     # Show a spinner and simulate API call
     with st.spinner("Calling AI Recommendation Engine..."):
         # Simulate API call delay
@@ -837,7 +832,6 @@ with st.expander("About This Dashboard (For Committee Review)"):
 st.markdown("---")
 st.markdown("""
 <div style="display: flex; justify-content: space-between; align-items: center;">
-    <div>Built with ❤️ by منارة for the Qualithon</div>
-    <div>Imam Abdulrahman Bin Faisal University</div>
+    <div>Built with ❤️ by منارة Team</div>
 </div>
 """, unsafe_allow_html=True)
